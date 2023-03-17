@@ -88,4 +88,54 @@ describe("Applying voucher", () => {
       applied: false
     })
   })
+
+  it("Should respond with the same finalPrice if amount lower than 100", 
+  async () => {
+    const voucher = {
+      id: 1,
+      code: "CODE10",
+      discount: 10,
+      used: false
+    }
+    const amount = 99
+
+    jest.spyOn(voucherRepository, "getVoucherByCode").mockImplementationOnce((): any => {
+      return voucher
+    })
+
+    const result = await voucherService.applyVoucher(voucher.code, amount)
+
+    expect(result).toEqual({
+      amount,
+      discount: voucher.discount,
+      finalAmount: amount,
+      applied: false
+    })
+  })
+
+  it("Should respond with the price with descount", 
+  async () => {
+    const voucher = {
+      id: 1,
+      code: "CODE10",
+      discount: 10,
+      used: false
+    }
+    const amount = 200
+
+    jest.spyOn(voucherRepository, "getVoucherByCode").mockImplementationOnce((): any => {
+      return voucher
+    })
+
+    jest.spyOn(voucherRepository, "useVoucher").mockImplementationOnce((): any => {})
+
+    const result = await voucherService.applyVoucher(voucher.code, amount)
+
+    expect(result).toEqual({
+      amount,
+      discount: voucher.discount,
+      finalAmount: amount - (amount * (voucher.discount / 100)),
+      applied: true
+    })
+  })
 })
